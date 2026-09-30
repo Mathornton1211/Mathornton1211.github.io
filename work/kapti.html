@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{if(localStorage.theme==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<title>Kapti · Case Study · Mathew Thornton</title>
+<meta property="og:title" content="Kapti · Case Study · Mathew Thornton">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://mathornton1211.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Case study: Kapti, a Windows meeting assistant that records, transcribes and writes notes on your own PC, with a single audited gateway for any optional cloud traffic. Built by Mathew Thornton in Rust and Tauri.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<nav class="top">
+  <div class="wrap">
+    <a class="name" href="../">Mathew Thornton</a>
+    <ul>
+      <li><a href="../#work">Work</a></li>
+      <li><a href="../tailor.html">Job-fit demo</a></li>
+      <li><a href="../resume.html">Resume</a></li>
+    </ul>
+  </div>
+</nav>
+<main class="wrap narrow case" style="padding:40px 20px 56px">
+  <div class="eyebrow">Case study · Desktop app · Rust + Tauri</div>
+  <h1>Kapti: a meeting assistant that never phones home</h1>
+  <p class="lede">Kapti records a call, transcribes it on your own Windows PC, and writes the notes with a local language model. It can also bring up what you've already written on a topic while the meeting is still going. Nothing leaves the machine unless you turn a cloud engine on. If you do, every request goes through one Rust module that checks an allowlist and logs the request, and CI fails the build if code anywhere else tries to open a socket. I started from a fork of the open-source Meetily v0.4.1 (MIT) and rebuilt most of what matters.</p>
+
+  <div class="facts">
+    <div class="fact"><b>1,144</b><span>Rust tests (the fork started with about 250)</span></div>
+    <div class="fact"><b>26 → 1</b><span>places that can reach the network</span></div>
+    <div class="fact"><b>242</b><span>IPC commands between Rust and the UI</span></div>
+    <div class="fact"><b>26 / 28</b><span>interview questions caught on the test fixture, 0 false cards</span></div>
+    <div class="fact"><b>57.5s → 1.7s</b><span>time to a written answer after moving to a GPU sidecar and smaller model</span></div>
+  </div>
+
+  <figure class="shot wide">
+    <img class="only-light" src="../assets/shots/live-session-light.png" alt="Kapti during a live call: two audio tracks with levels, a timestamped transcript attributed to each speaker, a notepad with an action and a decision, and bookmarks. The status bar reads LOCAL, 0 B sent." width="1440" height="900" loading="lazy">
+    <img class="only-dark" src="../assets/shots/live-session-dark.png" alt="" width="1440" height="900" loading="lazy">
+    <figcaption>A live call. Each side is its own track, the transcript is attributed per speaker, and the status bar shows how many bytes have left the PC today (zero).</figcaption>
+  </figure>
+  <figure class="shot wide">
+    <img class="only-light" src="../assets/shots/note-screen-light.png" alt="A finished Kapti note: the transcript on the left, and on the right a summary, key points, chapters, decisions and action items, each linked back to a timestamp." width="1440" height="1000" loading="lazy">
+    <img class="only-dark" src="../assets/shots/note-screen-dark.png" alt="" width="1440" height="1000" loading="lazy">
+    <figcaption>The note a local 2B model wrote afterwards. Every decision and action item links back to the moment it was said.</figcaption>
+  </figure>
+
+  <h2>The problem</h2>
+  <p>Most meeting tools send your audio to someone else's server. That's fine until the call is a salary review, a doctor's appointment, or a customer under NDA. The usual workaround is to not record those calls, so the meetings that matter most end up with no record at all.</p>
+  <p>I wanted the transcription model, the language model, the database and the search index all running locally, and I wanted "local" enforced by the build rather than promised in a settings screen.</p>
+
+  <h2>What it does</h2>
+  <ul>
+    <li><b>Records both sides separately.</b> The microphone and system audio are captured as two tracks, so the transcript can attribute lines instead of guessing. It can also capture a single application's audio. If something fails mid-call, audio spools to disk and the transcript is recovered.</li>
+    <li><b>Transcribes on the device</b> with Whisper or Parakeet.</li>
+    <li><b>Writes the note when you stop:</b> summary, decisions, action items and chapters, from templates. Notes keep their versions, so regenerating one never overwrites the previous version, and they export to Markdown.</li>
+    <li><b>Meeting assist.</b> When a subject comes up that you've written about before, it quotes the passage back with a citation. No model is involved, so it is fast and can't invent anything.</li>
+    <li><b>Interview assist.</b> It detects a question aimed at you, retrieves what you've actually written on the subject, and drafts a prompt where every bullet cites its source. Paste a job advert and the prep pack shows which requirements you have evidence for and which you don't.</li>
+  </ul>
+
+  <h2>Architecture</h2>
+  <p>A Tauri 2 shell with a Rust core and a Next.js front end. Audio capture uses WASAPI directly. Speech runs through whisper.cpp or Parakeet. The language model runs in a llama.cpp sidecar process with CPU, CUDA and Vulkan builds. Retrieval uses SQLite FTS5 with BM25 ranking.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 760 360" role="img" aria-labelledby="kapti-diag-title">
+      <title id="kapti-diag-title">Kapti data flow: two-track capture to on-device speech-to-text to local notes; a local knowledge base feeds meeting and interview assist; an egress gateway is the only path to optional cloud engines.</title>
+      <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+
+      <!-- local boundary -->
+      <rect class="edge dash" x="8" y="26" width="744" height="246" rx="10"/>
+      <text class="t s" x="18" y="18">THIS PC: local by default</text>
+
+      <!-- sources -->
+      <rect class="box" x="20" y="40" width="130" height="44" rx="8"/>
+      <text class="t" x="85" y="67" text-anchor="middle">Microphone</text>
+      <rect class="box" x="20" y="100" width="130" height="44" rx="8"/>
+      <text class="t" x="85" y="127" text-anchor="middle">System audio</text>
+
+      <!-- capture -->
+      <rect class="box" x="190" y="60" width="150" height="64" rx="8"/>
+      <text class="t" x="265" y="88" text-anchor="middle">Two-track capture</text>
+      <text class="t s" x="265" y="106" text-anchor="middle">WASAPI · per-app</text>
+
+      <!-- STT -->
+      <rect class="box" x="380" y="60" width="160" height="64" rx="8"/>
+      <text class="t" x="460" y="88" text-anchor="middle">On-device STT</text>
+      <text class="t s" x="460" y="106" text-anchor="middle">Whisper / Parakeet</text>
+
+      <!-- local LLM -->
+      <rect class="box" x="580" y="60" width="160" height="64" rx="8"/>
+      <text class="t" x="660" y="88" text-anchor="middle">Local LLM notes</text>
+      <text class="t s" x="660" y="106" text-anchor="middle">llama.cpp sidecar</text>
+
+      <!-- documents -->
+      <rect class="box" x="20" y="190" width="130" height="64" rx="8"/>
+      <text class="t" x="85" y="218" text-anchor="middle">Your documents</text>
+      <text class="t s" x="85" y="236" text-anchor="middle">Word, MD, vault</text>
+
+      <!-- knowledge base -->
+      <rect class="box" x="190" y="190" width="150" height="64" rx="8"/>
+      <text class="t" x="265" y="218" text-anchor="middle">Knowledge base</text>
+      <text class="t s" x="265" y="236" text-anchor="middle">SQLite FTS5 · BM25</text>
+
+      <!-- assist -->
+      <rect class="box" x="380" y="190" width="160" height="64" rx="8"/>
+      <text class="t" x="460" y="218" text-anchor="middle">Meeting / interview</text>
+      <text class="t s" x="460" y="236" text-anchor="middle">assist: cite or refuse</text>
+
+      <!-- egress -->
+      <rect class="box hl" x="580" y="190" width="160" height="64" rx="8"/>
+      <text class="t" x="660" y="218" text-anchor="middle">Egress gateway</text>
+      <text class="t s" x="660" y="236" text-anchor="middle">allowlist · logged</text>
+
+      <!-- cloud -->
+      <rect class="box" x="580" y="290" width="160" height="50" rx="8"/>
+      <text class="t" x="660" y="312" text-anchor="middle">Claude / Gemini</text>
+      <text class="t s" x="660" y="329" text-anchor="middle">opt-in, own key</text>
+
+      <text class="t s" x="20" y="312">CI fails the build if any other code opens a socket.</text>
+      <text class="t s" x="20" y="330">Email and work folders are never eligible for cloud.</text>
+
+      <!-- edges -->
+      <line class="edge" x1="150" y1="62" x2="188" y2="80"/>
+      <line class="edge" x1="150" y1="122" x2="188" y2="104"/>
+      <line class="edge" x1="340" y1="92" x2="378" y2="92"/>
+      <line class="edge" x1="540" y1="92" x2="578" y2="92"/>
+      <line class="edge" x1="460" y1="124" x2="460" y2="188"/>
+      <line class="edge" x1="150" y1="222" x2="188" y2="222"/>
+      <line class="edge" x1="340" y1="222" x2="378" y2="222"/>
+      <path class="edge" d="M520,190 L520,160 L620,160 L620,126"/>
+      <line class="edge dash" x1="540" y1="222" x2="578" y2="222"/>
+      <line class="edge hl dash" x1="660" y1="254" x2="660" y2="288"/>
+    </svg>
+    <figcaption>Everything inside the dashed line runs on the PC. The transcript feeds both the notes and live assist. A grounded prompt goes to the local model by default, and only goes through the egress gateway, the one module allowed to open a connection, if you've turned on a cloud engine.</figcaption>
+  </figure>
+
+  <p>What I changed from upstream: the fork audit found mic and system audio summed before transcription, 26 separate network call sites, an updater and an FFmpeg downloader that bypassed the HTTP client, and no CI running tests. I rebuilt the pipeline around separate tracks, routed every connection through the egress module, archived the unused Python/FastAPI backend, and removed FFmpeg (GPL) so imports decode with Symphonia and recordings are WAV files written in Rust. The knowledge base, both assist modes, per-app capture and the gateway are new.</p>
+
+  <h2>Key decisions</h2>
+  <ul>
+    <li><b>One gateway for network traffic, checked on every redirect.</b> <code>egress::remote(feature)</code> builds a client per feature whose redirect policy re-checks the host allowlist and HTTPS on every hop, then writes one log row per request with measured byte counts. Checking redirects stops an approved host from bouncing a download to one that isn't approved. The trade-off is that every new integration has to be registered as a feature before it can send anything, and I think that's the right default.</li>
+    <li><b>Keyword search before vectors.</b> Retrieval is SQLite FTS5, not embeddings. FTS5 is already compiled into the bundled SQLite, so it cost no new dependency and no model download, and its results are exact and explainable. Callers use a one-method <code>ChunkIndex</code> trait, so a vector index can be added later as a second implementation. The cost is weaker matching on paraphrase.</li>
+    <li><b>No evidence, no request.</b> If the knowledge base is empty, nothing matched, or the only match is weak, the answer path refuses without building a prompt or calling a model. A self-test proves it with an engine that fails if it is ever called. "The model returned nothing" and "no request was sent" are different guarantees, and only the second holds up.</li>
+    <li><b>Privacy enforced in the SQL, not in the prompt builder.</b> Each source carries a <code>cloud_eligible</code> flag, and retrieval drops ineligible sources in the query whenever a cloud engine will write the answer. If the filter lived in the evidence builder, one forgotten caller would be enough to leak. Mail and work folders are written ineligible before their first chunk.</li>
+    <li><b>A saved API key is not consent.</b> The key and the enable switch are separate controls, and the egress feature follows the switch. Pasting a key so it's ready for later can't start sending documents anywhere.</li>
+  </ul>
+
+  <h2>Engineering quality</h2>
+  <ul>
+    <li><b>Tests.</b> 1,144 Rust unit tests, plus <code>#[ignore]</code> tests that run against real documents and the real local models. Those ignored tests found most of the real bugs: parsers that passed synthetic fixtures and mangled real files, and prompts that worked against a scripted engine and failed against an actual one.</li>
+    <li><b>Egress guard.</b> A script scans the Rust, the frontend and the Tauri config for HTTP clients, raw sockets, <code>fetch</code>, remote URLs, updater or analytics crates, and fails if it finds any outside the egress module. It runs in GitHub Actions on every push and pull request.</li>
+    <li><b>Migration lock.</b> Kapti updates in place, so an edited migration would make every existing database refuse to open. <code>migrations.lock</code> pins a SHA-384 for each of the 19 migrations. A CI job and a Rust test both fail the build if a pinned file changes.</li>
+    <li><b>Model supply chain.</b> The only models Kapti may download come from a bundled manifest, with every URL pinned to a Hugging Face commit and a SHA-256 for each file. The sidecar only accepts a process that answers with a fresh per-launch token.</li>
+    <li><b>Measured, not assumed.</b> Measuring the sidecar turned up two real bugs: VRAM detection hardcoded to 4 GB, and a KV-cache estimate that was eight to ten times too high for the hybrid models Kapti ships. Fixing both, running on Vulkan and using the smaller model cut a written answer from 57.5 s to 1.7 s warm. I also documented a run I got wrong: a game was holding most of the GPU, and my first theory about the slowdown was confident and completely mistaken.</li>
+  </ul>
+
+  <h2>What I'd do next</h2>
+  <p>I ran a seven-reviewer audit on the app (architecture, security, data, UX and others), checked every finding against the code, and fixed eight the same day. Roughly one finding in five didn't survive checking. The open items, in order:</p>
+  <ul>
+    <li><b>Gate the tests in CI.</b> Only the two guards run today. The unit tests, <code>tsc</code> and clippy are run by hand, and the migration guard runs on one platform only.</li>
+    <li><b>Generate the IPC types.</b> 242 commands and 362 hand-written TypeScript mirrors are kept in sync by convention. My most expensive bug was a missing <code>camelCase</code> rename that turned two fields into <code>undefined</code> and quietly disabled recording for a day. The fix is <code>ts-rs</code> or <code>tauri-specta</code>.</li>
+    <li><b>Make failures visible.</b> Too many errors show up as empty screens. Diagnostics now go to a log file, but the UI still needs to tell "broken" apart from "nothing here".</li>
+    <li><b>Finish what's scaffolded:</b> redaction before a cloud request (plumbed through, but nothing calls it yet), PDF import, embeddings, and a code-aware chunker.</li>
+    <li><b>Test with real audio.</b> Every live-assist number so far comes from a text fixture, so none of them include transcription error.</li>
+  </ul>
+
+  <div class="callout"><b>Stack:</b> Rust, Tauri 2, Next.js / TypeScript, WASAPI (<code>windows</code> crate), whisper.cpp, Parakeet, llama.cpp sidecar (CPU / CUDA / Vulkan), SQLite with FTS5 via sqlx, Symphonia, GitHub Actions, PowerShell build and guard scripts. Windows 10/11. MIT licensed, forked from Meetily v0.4.1 by Zackriya Solutions.</div>
+
+  <div class="cta">
+    <a class="btn" href="../#work">← Back to work</a>
+    <a class="btn primary" href="../">Ask the AI about Kapti</a>
+  </div>
+</main>
+<footer class="site"><div class="wrap"><span>© 2026 Mathew Thornton</span></div></footer>
+<script src="../assets/motion.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{if(localStorage.theme==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<title>Resume · Mathew Thornton</title>
+<meta property="og:title" content="Resume · Mathew Thornton">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://mathornton1211.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Resume of Mathew Thornton: AI & automation engineer, platform and systems.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<nav class="top">
+  <div class="wrap">
+    <a class="name" href="./">Mathew Thornton</a>
+    <ul>
+      <li><a href="./#work">Work</a></li>
+      <li><a href="tailor.html">Job-fit demo</a></li>
+      <li><a href="resume.html" aria-current="page">Resume</a></li>
+    </ul>
+  </div>
+</nav>
+<main class="wrap narrow" style="padding-top:32px;padding-bottom:48px">
+  <div class="cta noprint" style="margin-bottom:16px;justify-content:space-between;align-items:center">
+    <span class="muted" style="font-size:14px">Curious how it fits a specific role? Try the <a href="tailor.html">job-fit demo</a>.</span>
+    <a class="btn primary" href="resume.pdf" download>Download PDF</a>
+  </div>
+  <article class="resume" id="resume"><p class="muted">Loading…</p></article>
+</main>
+<footer class="site"><div class="wrap"><span>© 2026 Mathew Thornton</span></div></footer>
+<script src="assets/resume.js"></script>
+<script>
+  fetch("data/profile.json").then((r) => r.json()).then((p) => renderResume(document.getElementById("resume"), p));
+</script>
+<script src="assets/motion.js"></script>
+</body>
+</html>

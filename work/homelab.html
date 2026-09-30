@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{if(localStorage.theme==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<title>Homelab Platform · Case Study · Mathew Thornton</title>
+<meta property="og:title" content="Homelab Platform · Case Study · Mathew Thornton">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://mathornton1211.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Case study: rebuilding a 36-stack self-hosted platform as code, with a policy-gated deploy, side-by-side migration and sandboxed AI agents.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<nav class="top">
+  <div class="wrap">
+    <a class="name" href="../">Mathew Thornton</a>
+    <ul>
+      <li><a href="../#work">Work</a></li>
+      <li><a href="../tailor.html">Job-fit demo</a></li>
+      <li><a href="../resume.html">Resume</a></li>
+    </ul>
+  </div>
+</nav>
+<main class="wrap narrow case" style="padding:40px 20px 56px">
+  <div class="eyebrow">Case study · infrastructure as code</div>
+  <h1>Homelab platform</h1>
+  <p class="lede">I rebuilt my home server from a pile of hand-managed containers into 36 Compose stacks in git. A validator has to pass before anything deploys, the new stack ran next to the old one during the migration, and the AI agents run in containers designed around what they can't reach.</p>
+
+  <div class="facts">
+    <div class="fact"><b>36</b><span>Compose stacks, each with a declared contract</span></div>
+    <div class="fact"><b>61</b><span>image references pinned by digest</span></div>
+    <div class="fact"><b>0</b><span>floating tags allowed; deploy refuses them</span></div>
+    <div class="fact"><b>21</b><span>Prometheus alert rules</span></div>
+    <div class="fact"><b>3</b><span>authority tiers: auto, notify, ask</span></div>
+  </div>
+
+  <h2>Why rebuild</h2>
+  <p>When I took stock of the old lab, the list was bad. The nightly backup script failed with an error on every run and had never produced a copy, so the container manager's own database had never been backed up. More than 17 images ran on floating tags, and an auto-updater had broken services three times by pulling new versions nobody had reviewed. The password vault wasn't defined in any compose file. Several exited containers had been granted full privileges to administer the host from inside, and there were about thirty leftover project directories that nobody could explain.</p>
+  <p>I decided not to repair it. The plan treated every service as replaceable and only the data as precious. I wrote it as a phased build plan with a verification gate at the end of each phase. Two days in, I lost a photo library during a data move: a <code>mv</code> across two bind mounts turned into a copy-then-delete, and I then removed what I thought was a partial copy. Nothing was backed up, and that was the real root cause. That's why backups were the first thing built, before any service moved.</p>
+
+  <h2>Policy as code: the deploy gate</h2>
+  <p><code>deploy.sh</code> runs <code>validate.sh</code> first and exits if it fails. The validator checks every stack for the following:</p>
+  <ul>
+    <li><b>It parses the way Docker parses.</b> It uses a strict YAML check that rejects duplicate keys. The first version used a lenient parser, and a broken file got through as a PASS.</li>
+    <li><b>An <code>x-homelab</code> contract block</b> with <code>tier</code>, <code>wave</code>, <code>data_class</code> and <code>purpose</code>.</li>
+    <li><b>Every image is pinned by <code>@sha256</code> digest.</b> A floating tag is a hard failure. A locally built image (7 stacks) is only accepted if the file declares an <code>unpinned_reason</code>. That way the exception is written down in the stack itself, not tucked away in the validator.</li>
+    <li><b>The <code>homelab.managed</code> label</b> is present. The edge proxy won't route to anything without it.</li>
+    <li><b>No plaintext credentials</b> anywhere in stacks, policy, host config or scripts. The scan has a tested list of exclusions (variable references, placeholders, lock files, version ranges), because a gate with false positives ends up switched off.</li>
+    <li><b>Every <code>.env</code> file is ignored by git</b>, checked with <code>git check-ignore</code> rather than assumed.</li>
+  </ul>
+  <p>A typical contract block, lightly trimmed:</p>
+<pre class="mono" style="background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;font-size:13px;line-height:1.5">x-homelab:
+  tier: auto
+  wave: 2
+  data_class: replaceable
+  backup_paths: []      # model weights are a download, not data
+  depends_on_host: []
+  purpose: Local LLM runtime - alert triage and the chat UI, sharing one model.
+
+services:
+  ollama:
+    image: ollama/ollama@sha256:6b08…8966
+    mem_limit: 22g
+    cpus: 8.0
+    labels:
+      homelab.managed: "true"
+      homelab.tier: auto
+      homelab.wave: "2"</pre>
+  <p>The deploy script also learned from a failure. If a stack bind-mounts its own code, <code>compose up</code> won't recreate it after a <code>git pull</code>, so the old code keeps running while the deploy reports success. Stacks like that now name the services to restart in <code>restart_on_deploy</code>. They list individual services, not the whole stack, so the notification queue doesn't get dropped just to reload one Python file.</p>
+
+  <h2>Architecture</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 760 380" role="img" aria-label="Clients reach an edge proxy with optional SSO, which routes to service stacks deployed in waves. Below them sit metrics and alerting, a local LLM, backups and agent sandboxes.">
+      <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+
+      <rect class="box" x="20" y="20" width="130" height="52" rx="8"/>
+      <text class="t" x="34" y="42">Clients</text>
+      <text class="t s" x="34" y="60">house network</text>
+
+      <rect class="box hl" x="200" y="20" width="200" height="52" rx="8"/>
+      <text class="t" x="214" y="42">Edge proxy (Traefik)</text>
+      <text class="t s" x="214" y="60">managed labels only</text>
+
+      <rect class="box" x="450" y="20" width="200" height="52" rx="8"/>
+      <text class="t" x="464" y="42">SSO (Authentik)</text>
+      <text class="t s" x="464" y="60">a front door, not the only</text>
+
+      <path class="edge hl" d="M150,46 L198,46"/>
+      <path class="edge dash" d="M400,46 L448,46"/>
+
+      <rect class="box" x="20" y="130" width="230" height="62" rx="8"/>
+      <text class="t" x="34" y="154">Wave 0–1: foundations</text>
+      <text class="t s" x="34" y="174">edge, backup, metrics, alerts</text>
+
+      <rect class="box" x="265" y="130" width="230" height="62" rx="8"/>
+      <text class="t" x="279" y="154">Wave 2–3: stateful services</text>
+      <text class="t s" x="279" y="174">media, photos, vault, n8n</text>
+
+      <rect class="box" x="510" y="130" width="230" height="62" rx="8"/>
+      <text class="t" x="524" y="154">Wave 4: apps and agents</text>
+      <text class="t s" x="524" y="174">SSO, git, own apps, AI tools</text>
+
+      <path class="edge hl" d="M300,72 L140,128"/>
+      <path class="edge hl" d="M300,72 L380,128"/>
+      <path class="edge hl" d="M300,72 L620,128"/>
+
+      <rect class="box" x="20" y="262" width="158" height="58" rx="8"/>
+      <text class="t" x="32" y="285">Metrics + alerts</text>
+      <text class="t s" x="32" y="304">rule-based fixes</text>
+
+      <rect class="box" x="208" y="262" width="158" height="58" rx="8"/>
+      <text class="t" x="220" y="285">Local LLM</text>
+      <text class="t s" x="220" y="304">explains, never acts</text>
+
+      <rect class="box" x="396" y="262" width="158" height="58" rx="8"/>
+      <text class="t" x="408" y="285">Backups</text>
+      <text class="t s" x="408" y="304">restic, NAS mirror</text>
+
+      <rect class="box hl" x="584" y="262" width="158" height="58" rx="8"/>
+      <text class="t" x="596" y="285">Agent sandboxes</text>
+      <text class="t s" x="596" y="304">no socket, one folder</text>
+
+      <path class="edge dash" d="M100,194 L100,260"/>
+      <text class="t s" x="108" y="232">scrape</text>
+      <path class="edge" d="M178,291 L206,291"/>
+      <path class="edge dash" d="M400,194 L470,260"/>
+      <text class="t s" x="444" y="222">read-only, nightly</text>
+      <path class="edge" d="M640,194 L660,260"/>
+      <path class="edge dash" d="M663,322 C663,366 287,366 287,324"/>
+      <text class="t s" x="404" y="372">cheap triage on the local model</text>
+    </svg>
+    <figcaption>Everything runs on a single host, with bulk storage on a separate NAS. Stacks deploy in waves: the foundations first, and the most precious data last.</figcaption>
+  </figure>
+  <p>A few design choices worth mentioning:</p>
+  <ul>
+    <li><b>The raw Docker socket is mounted in exactly one place</b>, a read-only socket proxy. Everything else, the edge proxy included, talks to that. On a Docker host, socket access is root.</li>
+    <li><b>SSO is a front door, never the only door.</b> The dashboard, the alert channel, the password vault and the proxy itself are deliberately kept out from behind it, so you're never locked out of your diagnostics during an outage.</li>
+    <li><b>Self-healing uses a lookup table, not a model.</b> The watcher's verbs go through a second socket proxy that allows only inspect, restart and start. DELETE isn't enabled at all, and restarts are rate-capped. The local model gets the alert text and writes a plain-English summary. It isn't asked what to do, and it has no way to act on an answer.</li>
+    <li><b>Backups are add-only.</b> Stack data is mounted read-only and replicated without <code>--delete</code>. Encrypted, versioned restic snapshots sit on top of that, and every backup writes a heartbeat that gets monitored.</li>
+  </ul>
+
+  <h2>Migrating without downtime</h2>
+  <p>The old lab kept serving the house the whole time. The two sides were set up so they couldn't interfere with each other:</p>
+  <div class="features">
+    <div class="feature">
+      <h3>Legacy</h3>
+      <ul>
+        <li>Managed through a container-manager UI</li>
+        <li>Mixed networks and names</li>
+        <li>Floating tags plus an auto-updater</li>
+        <li>No marker for what belonged where</li>
+      </ul>
+    </div>
+    <div class="feature">
+      <h3>Rebuilt</h3>
+      <ul>
+        <li>Compose files in git, deployed by script</li>
+        <li>Its own network, name prefix and data directory</li>
+        <li>Pinned digests only</li>
+        <li>A <code>homelab.managed</code> label the edge proxy filters on, so a legacy container can't be exposed by accident</li>
+      </ul>
+    </div>
+  </div>
+  <p>Each service follows the same steps: stand it up against a copy of the data, verify it, quiesce the old one, sync the delta, then switch over. The old instance stays <b>stopped but intact</b> as the rollback. A service only retires after a soak period, once its backups verify from the new side and nothing still pending depends on it. The old proxy, for example, was only retired after every name returned the same status through the new edge as through the old one.</p>
+  <p>One lesson from this part: <code>docker stop</code> isn't retirement. A daemon restart brought three "retired" containers back because of <code>restart: always</code>, and for a while two copies of one service were running against different databases. Retiring now means setting the restart policy to <code>no</code> and then stopping the container, never removing it.</p>
+
+  <h2>Sandboxing AI agents</h2>
+  <p>Two stacks run model-driven shell commands: a chat-to-Claude-Code bridge and a work-board service that takes issues from a Linear backlog and hands them to agents. Both are built around what they must <em>not</em> be able to reach:</p>
+  <ul>
+    <li>No Docker socket and no membership in the small internal network where the restart-capable proxy lives. Restarting a container simply isn't possible from inside.</li>
+    <li>No NAS mounts, no other stacks' data, and no checkout of the repo that deploys them. An agent can't edit its own guardrails.</li>
+    <li>One workspace directory. The chat bridge refuses to start without a user allowlist.</li>
+    <li>Read-only git credentials. Agent work goes to a branch on the self-hosted git server, never to the main branch.</li>
+    <li>Hard refusals on spend: per-hour and per-day job caps, plus a share of the subscription window held back for my own interactive use.</li>
+  </ul>
+  <p>The biggest lesson was that <b>a comment describing isolation is not isolation</b>. One stack's header said it had no path to the Docker API. When I tested that claim from inside the container, a restart request went through, because the proxy's allowlist covered the whole lab network. The proxy now sits on a dedicated internal network with a single peer, and I test isolation claims from inside the container. The same thinking applies to the pipeline itself: an issue used to close when its last stage <em>finished</em>, even if that stage had reported it couldn't do the work. Now it closes only on a recorded verdict with evidence.</p>
+
+  <h2>What I'd do next</h2>
+  <ul>
+    <li><b>Move the gate into CI.</b> <code>validate.sh</code> is written as the local version of a CI pipeline. Next is running it on a self-hosted runner, alongside secret scanning, per-digest image scanning and automated digest-bump PRs. Pinning stops silent breakage, but it also stops silent security updates, so it needs a scanner next to it.</li>
+    <li><b>Enforce the authority tiers.</b> The path-to-tier map already exists as policy. Branch protection should enforce it, so changes to policy, host config and scripts always need a human review.</li>
+    <li><b>Consolidate ownership.</b> A few services still run outside the repo. The rule is "if it isn't in the repo, it doesn't run", and a daily inventory diff should flag anything that breaks it.</li>
+    <li><b>Encrypt secrets per file and codify the host.</b> That means sops-encrypted secrets in git, and a provisioning playbook so the host itself can be rebuilt from the repo too.</li>
+  </ul>
+
+  <div class="callout"><b>Stack:</b> Docker Compose · Traefik · Authentik · Prometheus, node-exporter, cAdvisor · Alertmanager + ntfy · restic · Ollama · Open WebUI · Gitea · Bash · Python · Claude Code · Linear API</div>
+
+  <div class="cta">
+    <a class="btn" href="../#work">← Back to work</a>
+    <a class="btn primary" href="../">Ask the AI about the homelab</a>
+  </div>
+</main>
+<footer class="site"><div class="wrap"><span>© 2026 Mathew Thornton</span></div></footer>
+<script src="../assets/motion.js"></script>
+</body>
+</html>

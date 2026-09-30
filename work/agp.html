@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{if(localStorage.theme==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<title>AGP Automation Platform · Case Study · Mathew Thornton</title>
+<meta property="og:title" content="AGP Automation Platform · Case Study · Mathew Thornton">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://mathornton1211.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Case study: an AI voice receptionist, multi-tenant n8n automation platform and lead-audit product I built and ran as a solo founder in 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<nav class="top">
+  <div class="wrap">
+    <a class="name" href="../">Mathew Thornton</a>
+    <ul>
+      <li><a href="../#work">Work</a></li>
+      <li><a href="../tailor.html">Job-fit demo</a></li>
+      <li><a href="../resume.html">Resume</a></li>
+    </ul>
+  </div>
+</nav>
+<main class="wrap narrow case" style="padding:40px 20px 56px">
+  <div class="eyebrow">Case study · Founder · Feb 2026 – present</div>
+  <h1>AGP: an AI receptionist and automation platform for local businesses</h1>
+  <p class="lede">In February 2026 I founded Assisted Growth Partner (AGP) and built its whole technical stack myself: a voice agent that answers and books calls, a multi-tenant automation layer on n8n, and a lead-audit product that shows a business where it is losing leads. It runs in production for paying clients. This page covers what I built, how it fits together, and what I'd do differently.</p>
+
+  <div class="facts">
+    <div class="fact"><b>Solo</b><span>founder, engineer and operator</span></div>
+    <div class="fact"><b>141</b><span>n8n workflow exports</span></div>
+    <div class="fact"><b>46</b><span>nodes in the largest (audit enrichment)</span></div>
+    <div class="fact"><b>19</b><span>role agents in the build plugin</span></div>
+    <div class="fact"><b>5</b><span>clients live on the platform</span></div>
+  </div>
+
+  <h2>What it is</h2>
+  <p>AGP sells AI automation to small service businesses, the kind that depend on the phone and lose work when nobody picks up. The core product is an AI receptionist that answers calls, qualifies the caller, books appointments into the client's CRM calendar and hands hot leads to a human. Around it sit outbound follow-up calls, CRM sync, alerting, an ops dashboard, and a sales tool (the Lead-Leak Audit) that shows prospects what missed calls are costing them.</p>
+  <p>I do all of it, from product and architecture to running the production server.</p>
+
+  <h2>The AI receptionist</h2>
+  <p>Calls ran on Vapi. When a call came in, Vapi asked my n8n webhook which assistant to use. The real-time handler worked out which client the dialled number belonged to, loaded that client's agent config from Postgres, added context (a caller lookup in GoHighLevel, local weather) and returned a fully built assistant. If it couldn't resolve the client, it returned a safe fallback assistant rather than failing the call.</p>
+  <p>During the call the agent could use tools I exposed as webhooks:</p>
+  <ul>
+    <li><strong>Booking.</strong> One workflow checked availability and booked, rescheduled or cancelled appointments in the GoHighLevel calendar, then tagged and annotated the contact.</li>
+    <li><strong>Transfers.</strong> A human-transfer route and a sales-transfer route that picked the destination per client.</li>
+  </ul>
+  <p>When the call ended, the handler acknowledged Vapi immediately and passed the work to an async post-call workflow, so slow CRM calls never held up the voice side. That workflow:</p>
+  <ul>
+    <li>scored the call with an LLM (Gemini): a hot/warm/cold heat score, adjusted by per-client keyword boosters, plus an outcome classification;</li>
+    <li>wrote the call log (summary, transcript reference, duration, cost) to Postgres;</li>
+    <li>for warm and hot callers, upserted the contact in GoHighLevel, added a note, moved the opportunity stage and set follow-up tags;</li>
+    <li>sent the follow-up email or text through GoHighLevel where the client had turned that on, posted to Slack, and recorded opt-outs in a do-not-call table that also cancelled any queued outbound calls.</li>
+  </ul>
+  <p>Each night a review pipeline ran the day's calls past narrow reviewer agents. A rewriter proposed prompt changes, a QA agent checked them, and the result became a Linear issue for me to review. Nothing was applied automatically.</p>
+
+  <h2>Multi-tenant automation on n8n</h2>
+  <p>Every client shared the same workflows. What made that work was a <strong>resolve tenant + runtime</strong> subflow in front of everything. It normalised the incoming payload, looked up the client's config row and returned one runtime object (agent settings, CRM location, routing, notification channels), or an explicit "unresolved" result the caller had to handle.</p>
+  <ul>
+    <li><strong>Onboarding and provisioning.</strong> Small API workflows behind an onboarding form let a client save and submit their setup. I reviewed it in an admin view, and approving it provisioned the client's config row.</li>
+    <li><strong>Campaign dispatcher.</strong> Outbound follow-up calls sat in a Postgres queue. Every minute a dispatcher pulled the calls that were due, checked GoHighLevel to skip anyone who had already been handled, built the payload through a shared subflow, placed the call through Vapi, and marked the row in progress, or failed with a scheduled retry. A result handler closed each row out, and a nightly job reset stuck rows and pruned old ones.</li>
+    <li><strong>Error handling and backups.</strong> A shared error workflow logged each failure to Postgres and posted it to Slack. Daily jobs backed up workflows and key tables to a private GitHub repo.</li>
+    <li><strong>Ops dashboard.</strong> Small read-only API workflows fed a single-page dashboard with cost, performance, pipeline, billing and alert views. It showed cost per call, per hot lead and per booking, plus stuck calls and clients that had gone quiet.</li>
+  </ul>
+
+  <h2>The Lead-Leak Audit</h2>
+  <p>This was the sales tool: enter a local business, get back a report showing where it leaks leads. It ran as a pipeline of three n8n workflows behind a Next.js app.</p>
+  <ul>
+    <li><strong>Intake.</strong> A form posted to an intake webhook, which validated the input and ran the two stages below.</li>
+    <li><strong>Engine.</strong> This stage pulled Google business-profile data, built a profile scorecard, found the nearest competitor, and ran the "leak math" (an estimate of revenue lost to missed calls). It also rendered a PDF version. An after-hours test call was designed behind a compliance gate.</li>
+    <li><strong>Enrichment.</strong> Collectors for reviews, a site crawl, PageSpeed, ad presence, keyword data, map rankings, and "AI visibility": asking several LLM engines for a recommendation and checking whether the business came up.</li>
+    <li><strong>Scoring and report.</strong> The scores were deterministic code, not model output. The web report recomputed the headline numbers on the server so they matched n8n exactly, with parity tests to keep it that way. Claude handled the language work: turning free-text engine answers and review text into structured, validated JSON through forced tool calls. A separate eval suite covered the scoring and extraction.</li>
+    <li><strong>Preview site.</strong> Claude also generated a one-file preview website for the audited business from the audit data. One pass built the site and a second critiqued and revised it. The prompt told it never to invent reviews, ratings or offers.</li>
+  </ul>
+  <p>Automated outbound outreach is deliberately held behind compliance gates (calling rules, email law, do-not-call) until each piece passes review.</p>
+
+  <h2>Architecture</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 760 380" role="img" aria-labelledby="agp-arch-title">
+      <title id="agp-arch-title">AGP architecture: callers and prospects enter through Vapi and the audit app, n8n resolves the tenant and runs the workflows, and results go to Postgres, GoHighLevel, LLMs, Slack and the ops dashboard.</title>
+      <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+
+      <!-- entry points -->
+      <rect class="box" x="20" y="40" width="150" height="46" rx="8"/>
+      <text class="t" x="95" y="60" text-anchor="middle">Caller</text>
+      <text class="t s" x="95" y="76" text-anchor="middle">inbound / outbound</text>
+
+      <rect class="box hl" x="20" y="120" width="150" height="46" rx="8"/>
+      <text class="t" x="95" y="140" text-anchor="middle">Vapi voice agent</text>
+      <text class="t s" x="95" y="156" text-anchor="middle">tools via webhooks</text>
+
+      <rect class="box" x="20" y="230" width="150" height="46" rx="8"/>
+      <text class="t" x="95" y="250" text-anchor="middle">Prospect lookup</text>
+      <text class="t s" x="95" y="266" text-anchor="middle">intake form</text>
+
+      <rect class="box" x="20" y="300" width="150" height="46" rx="8"/>
+      <text class="t" x="95" y="320" text-anchor="middle">Audit app</text>
+      <text class="t s" x="95" y="336" text-anchor="middle">Next.js report</text>
+
+      <!-- n8n -->
+      <rect class="box" x="220" y="20" width="300" height="340" rx="10"/>
+      <text class="t" x="370" y="42" text-anchor="middle">n8n (queue mode)</text>
+      <rect class="box hl" x="240" y="56" width="260" height="38" rx="6"/>
+      <text class="t" x="370" y="80" text-anchor="middle">Resolve tenant + runtime</text>
+      <rect class="box" x="240" y="104" width="260" height="38" rx="6"/>
+      <text class="t" x="370" y="128" text-anchor="middle">Inbound + post-call handlers</text>
+      <rect class="box" x="240" y="152" width="260" height="38" rx="6"/>
+      <text class="t" x="370" y="176" text-anchor="middle">Campaign dispatcher + queue</text>
+      <rect class="box" x="240" y="200" width="260" height="38" rx="6"/>
+      <text class="t" x="370" y="224" text-anchor="middle">Onboarding + provisioning</text>
+      <rect class="box" x="240" y="248" width="260" height="38" rx="6"/>
+      <text class="t" x="370" y="272" text-anchor="middle">Audit intake, engine, enrich</text>
+      <rect class="box" x="240" y="296" width="260" height="38" rx="6"/>
+      <text class="t" x="370" y="320" text-anchor="middle">Error handler + backups</text>
+
+      <!-- services -->
+      <rect class="box hl" x="580" y="30" width="160" height="46" rx="8"/>
+      <text class="t" x="660" y="50" text-anchor="middle">Postgres</text>
+      <text class="t s" x="660" y="66" text-anchor="middle">tenants, calls, queue</text>
+
+      <rect class="box" x="580" y="98" width="160" height="46" rx="8"/>
+      <text class="t" x="660" y="118" text-anchor="middle">GoHighLevel CRM</text>
+      <text class="t s" x="660" y="134" text-anchor="middle">contacts, calendar</text>
+
+      <rect class="box" x="580" y="166" width="160" height="46" rx="8"/>
+      <text class="t" x="660" y="186" text-anchor="middle">LLM calls</text>
+      <text class="t s" x="660" y="202" text-anchor="middle">Gemini, Claude</text>
+
+      <rect class="box" x="580" y="234" width="160" height="46" rx="8"/>
+      <text class="t" x="660" y="254" text-anchor="middle">Slack + Linear</text>
+      <text class="t s" x="660" y="270" text-anchor="middle">alerts, review issues</text>
+
+      <rect class="box" x="580" y="302" width="160" height="46" rx="8"/>
+      <text class="t" x="660" y="322" text-anchor="middle">Ops dashboard</text>
+      <text class="t s" x="660" y="338" text-anchor="middle">cost, pipeline</text>
+
+      <!-- edges: entry -->
+      <path class="edge" d="M95,86 L95,118"/>
+      <path class="edge hl" d="M170,136 L238,122"/>
+      <path class="edge dash" d="M240,171 L172,152"/>
+      <path class="edge" d="M95,276 L95,298"/>
+      <path class="edge hl" d="M170,320 L238,270"/>
+
+      <!-- edges: out -->
+      <path class="edge hl" d="M520,53 L578,53"/>
+      <path class="edge" d="M520,121 L578,121"/>
+      <path class="edge" d="M520,189 L578,189"/>
+      <path class="edge" d="M520,257 L578,257"/>
+      <path class="edge" d="M520,325 L578,325"/>
+    </svg>
+    <figcaption>Everything goes through n8n, and every tenant-scoped workflow calls the resolve-tenant subflow first. The dashed edge is the dispatcher placing outbound calls through Vapi. The audit app also calls Claude directly to generate preview sites.</figcaption>
+  </figure>
+
+  <h2>Building with agents</h2>
+  <p>Much of the Lead-Leak Audit was built with <strong>Agentic Builder</strong>, a Claude Code plugin I wrote. It defines 19 role agents (director, planner, coder, AI engineer, automation engineer, data engineer, QA, security, compliance, DBA and others) and a pipeline for handing work between them through shared files: brief, spec, tasks, test reports.</p>
+  <p>The part I'm most careful about is database access. Only the DBA agent can call the Postgres write tool; every other agent has it on a deny list. On top of that, a PreToolUse hook blocks every write unless I have opened a write window by creating a flag file, and it logs every attempt, allowed or blocked. So a migration only runs when I decide it should, and there is a record of each try.</p>
+
+  <h2>What I learned</h2>
+  <ul>
+    <li><strong>Error handling has to be the default.</strong> I built a shared error workflow, but attaching it was opt-in, and plenty of workflows never got it. The failures that hurt were the ones with nowhere to report to. Next time it's attached by default and checked before anything goes live.</li>
+    <li><strong>Treat workflow exports like code.</strong> Nightly exports to Git gave me history, but they also copied whatever was inside a workflow. Credentials belong in the credential store, and exports should be scanned before they're committed, just like a code repo.</li>
+    <li><strong>Too many generations.</strong> I ended up with three copies of the platform (original, a <code>[STAGE]</code> set and a <code>[V3]</code> set), plus several duplicate subflows and throwaway test workflows. Promoting changes by cloning workflows doesn't scale. Next time I would keep one set of workflows in version control, use environment-specific config, and deploy from there.</li>
+    <li><strong>Deterministic where it matters.</strong> The audit's numbers came from plain code with parity tests, and LLMs only handled extraction and writing. That split made the output defensible, and I'd use it again.</li>
+  </ul>
+
+  <div class="callout"><strong>Stack:</strong> n8n (queue mode with workers), Vapi, GoHighLevel API, Postgres, Next.js / TypeScript, Claude API, Gemini, Browserless, Cloudflare R2, Slack, Linear, Docker, Traefik, Redis, Uptime Kuma, Claude Code (custom plugin, agents, hooks).</div>
+
+  <div class="cta">
+    <a class="btn" href="../#work">← Back to work</a>
+    <a class="btn primary" href="../">Ask the AI about AGP</a>
+  </div>
+</main>
+<footer class="site"><div class="wrap"><span>© 2026 Mathew Thornton</span></div></footer>
+<script src="../assets/motion.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+name = "portfolio-agent"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Workers AI. On the Workers Free plan this is a free daily allowance with no
+# billing: once it's used up, calls fail until the next day.
+[ai]
+binding = "AI"
+
+[vars]
+# The GitHub Pages origin plus local dev servers.
+ALLOWED_ORIGINS = "https://mathornton1211.github.io,http://localhost:8080,http://127.0.0.1:8080"
+
+# Per-IP hourly limit.
+[[kv_namespaces]]
+binding = "RATE"
+id = "1ee8a578b0974cd8b3f5ee2e25e2ea99"

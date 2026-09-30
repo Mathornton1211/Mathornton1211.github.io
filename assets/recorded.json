@@ -1,0 +1,18 @@
+{
+  "What has Mat built with AI?": {
+    "trace": [["list_projects", {}, "6 projects"]],
+    "answer": "Mostly AI that runs on real systems:\n• Kapti: a meeting assistant that transcribes and writes notes entirely on-device (Whisper/Parakeet and llama.cpp), with a local knowledge base that surfaces your own notes during calls.\n• AGP: an AI phone receptionist and about 140 n8n workflows for local businesses, live with 5 clients.\n• Forge: a training app with a self-hosted AI coach that logs food from a photo or a sentence.\n• Agentic Builder: a Claude Code plugin with 19 role agents and least-privilege guardrails.\n• This site: the agent you're talking to, plus a job-tailoring feature."
+  },
+  "How is the homelab run as code?": {
+    "trace": [["get_project", {"id": "homelab"}, "Homelab platform"]],
+    "answer": "36 Docker Compose stacks live in one Git repo, and deploys go through a gate: deploy.sh refuses to run unless validate.sh passes. It requires every image pinned by digest, a declared contract per stack (tier, wave, data class, purpose, backup paths), a managed label, and a clean secrets scan. The rebuild ran side by side with the old setup while services moved over one at a time."
+  },
+  "Is he a fit for a DevOps role?": {
+    "trace": [["get_experience", {}, "4 roles"], ["get_skills", {}, "5 skill areas"]],
+    "answer": "For a platform or DevOps role, the strongest evidence is six years as a systems administrator (servers, networking, backups, identity) plus the homelab: 36 services as code with digest-pinned images, policy-gated deploys, Prometheus alerting and SSO. He also runs AGP's production stack (Docker, Traefik, Postgres, queue-mode n8n). Kubernetes isn't in his profile. For a specific posting, the \"Tailor to a job\" page gives a full fit report."
+  },
+  "What's Kapti?": {
+    "trace": [["get_project", {"id": "kapti"}, "Kapti"]],
+    "answer": "Kapti is a Windows meeting assistant that never phones home. It records the mic and system audio as separate tracks, transcribes on-device, and has a local LLM write the summary, decisions and action items. Any cloud feature is opt-in, and every request goes through one allow-listed gateway that CI enforces. It's built in Rust with Tauri 2, 242 IPC commands and 1,144 Rust tests."
+  }
+}

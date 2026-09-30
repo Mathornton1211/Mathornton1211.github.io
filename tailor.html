@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{if(localStorage.theme==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<title>Job-Fit Demo · Mathew Thornton</title>
+<meta property="og:title" content="Job-Fit Demo · Mathew Thornton">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://mathornton1211.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Paste a job description and get an honest AI fit report and a resume tailored to the role.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<nav class="top">
+  <div class="wrap">
+    <a class="name" href="./">Mathew Thornton</a>
+    <ul>
+      <li><a href="./#work">Work</a></li>
+      <li><a href="tailor.html" aria-current="page">Job-fit demo</a></li>
+      <li><a href="resume.html">Resume</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="wrap narrow" style="padding-top:40px;padding-bottom:48px">
+  <div class="noprint">
+    <div class="eyebrow">AI feature demo · structured output</div>
+    <h1>Job-fit analysis</h1>
+    <p class="lede">An AI feature I built: it reads a job description against my real experience and returns a structured fit report (matches with evidence, gaps stated plainly) plus a resume reordered for the role. <a href="#" id="example">See a finished example</a>, or paste any job description.</p>
+    <p class="muted" style="font-size:14px">The agent may only reword and reorder what's in <a href="data/profile.json">his profile</a>. It can't invent experience, and the output is checked against the profile before it's shown.</p>
+
+    <form id="f">
+      <textarea id="job" placeholder="Paste the full job description here…" maxlength="15000" required></textarea>
+      <div class="cta" style="margin-top:12px;align-items:center">
+        <button class="btn primary" id="go" type="submit">Tailor it</button>
+        <button class="btn" id="sample" type="button">Fill in a sample job</button>
+        <span id="state" class="muted" style="font-size:14px"></span>
+      </div>
+    </form>
+  </div>
+
+  <div id="out" hidden>
+    <div class="report noprint" id="report"></div>
+    <div class="cta noprint" style="margin:8px 0 16px;justify-content:space-between;align-items:center">
+      <h2 class="label" style="margin:0">Tailored resume</h2>
+      <button class="btn primary" onclick="window.print()">Save as PDF</button>
+    </div>
+    <article class="resume" id="resume"></article>
+  </div>
+</main>
+
+<footer class="site"><div class="wrap"><span>© 2026 Mathew Thornton</span><a href="work/this-site.html">How this works</a></div></footer>
+
+<script src="assets/config.js"></script>
+<script src="assets/resume.js"></script>
+<script>
+const SAMPLE = `AI Automation Engineer
+
+We're hiring an engineer to design and ship LLM-powered automations across our operations. You'll build agents that integrate with our CRM, email and internal APIs, and own them in production.
+
+Requirements
+- 3+ years building production systems; strong TypeScript or Python
+- Hands-on experience with LLM APIs (Anthropic, OpenAI), tool use and agent patterns
+- Workflow automation (n8n, Zapier, Temporal or similar)
+- Docker, CI/CD, and running services on Linux
+- Observability: logging, metrics, alerting
+- Clear written communication
+
+Nice to have
+- Kubernetes
+- Voice AI or telephony integrations
+- Experience with evals for LLM features`;
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const $ = (id) => document.getElementById(id);
+let profile;
+fetch("data/profile.json").then((r) => r.json()).then((p) => (profile = p));
+
+$("sample").onclick = () => ($("job").value = SAMPLE);
+
+async function showExample(note) {
+  const t = await fetch("assets/sample-tailor.json").then((r) => r.json());
+  $("job").value = SAMPLE;
+  show(t);
+  $("state").textContent = note || "A saved example for the sample job. Paste your own job description for a live run.";
+}
+$("example").onclick = (e) => { e.preventDefault(); showExample(); };
+
+$("f").onsubmit = async (e) => {
+  e.preventDefault();
+  $("go").disabled = true;
+  $("state").innerHTML = '<span class="spinner"></span> Reading the role and matching it against my experience (15–30 seconds)';
+  $("report").innerHTML = [1, 2, 3].map(() => '<div class="skel-panel"><div class="skel w40"></div><div class="skel w90"></div><div class="skel w70"></div><div class="skel w80"></div></div>').join("");
+  $("resume").innerHTML = "";
+  $("out").hidden = false;
+  try {
+    const res = await fetch(window.AGENT_API + "/tailor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job: $("job").value }),
+    });
+    const t = await res.json();
+    if (t.unavailable) return showExample("The live AI is resting (it runs on a free daily allowance), so here is a saved example for a sample job instead.");
+    if (!res.ok) throw new Error(t.error || "Something went wrong.");
+    show(t);
+    $("state").textContent = t.live ? "" : "Mock mode: no model connected.";
+  } catch (err) {
+    if (err.message === "Failed to fetch") return showExample("The live AI is offline right now, so here is a saved example for a sample job instead.");
+    $("out").hidden = true;
+    $("state").textContent = err.message;
+  } finally {
+    $("go").disabled = false;
+  }
+};
+
+function show(t) {
+  $("report").innerHTML = `
+    <div class="panel">
+      <h3>${esc(t.role_title)}${t.company ? " · " + esc(t.company) : ""}</h3>
+      <p style="margin:0">${esc(t.fit_summary)}</p>
+    </div>
+    <div class="panel">
+      <h3>Where he matches</h3>
+      <table>${t.matches.map((m) => `<tr><td>${esc(m.requirement)} <span class="pill ${m.strength}">${m.strength}</span></td><td>${esc(m.evidence)}</td></tr>`).join("")}</table>
+    </div>
+    ${t.gaps.length ? `<div class="panel"><h3>Gaps, stated plainly</h3><table>${t.gaps.map((g) => `<tr><td>${esc(g.requirement)}</td><td>${esc(g.note)}</td></tr>`).join("")}</table></div>` : ""}
+    <div class="panel">
+      <h3>A note from Mat</h3>
+      <p style="margin:0">${esc(t.intro_note)}</p>
+      <p style="margin:10px 0 0"><a href="mailto:${esc(profile.email)}?subject=${encodeURIComponent(t.role_title)}">Reply to Mat →</a></p>
+    </div>`;
+  renderResume($("resume"), profile, t);
+  $("out").hidden = false;
+  $("out").scrollIntoView({ behavior: "smooth" });
+}
+</script>
+<script src="assets/motion.js"></script>
+</body>
+</html>

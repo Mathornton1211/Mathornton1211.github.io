@@ -1,0 +1,45 @@
+<!doctype html>
+<!-- Source for assets/og.png (1200x630). Regenerate with:
+     chrome --headless=new --window-size=1200,630 --hide-scrollbars --screenshot=assets/og.png http://127.0.0.1:8080/tools/og.html -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden; position: relative;
+    background: #f4f2ee; color: #17181a; font-family: "Geist", sans-serif;
+    background-image: radial-gradient(circle at 1px 1px, rgb(23 24 26 / .12) 1px, transparent 0);
+    background-size: 28px 28px;
+  }
+  .l { position: absolute; left: 72px; top: 72px; width: 620px; }
+  .mark { display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 14px; background: #17181a; color: #f4f2ee; font: 600 18px "Geist Mono", monospace; }
+  .eyebrow { margin-top: 44px; font: 500 17px "Geist Mono", monospace; letter-spacing: .06em; text-transform: uppercase; color: #6d6961; display: flex; gap: 14px; align-items: center; }
+  .eyebrow::before { content: ""; width: 26px; height: 2px; background: #cf5a2b; }
+  h1 { margin-top: 22px; font-size: 64px; line-height: 1.02; letter-spacing: -0.045em; font-weight: 600; }
+  h1 em { font-style: normal; color: #cf5a2b; }
+  .foot { position: absolute; left: 72px; bottom: 60px; font: 500 19px "Geist Mono", monospace; color: #6d6961; display: flex; gap: 28px; }
+  .foot b { color: #17181a; font-weight: 500; }
+  .r { position: absolute; right: 60px; top: 70px; width: 430px; }
+  .band { border: 1.5px dashed #c9c4b9; border-radius: 16px; padding: 16px 16px 18px; margin-bottom: 26px; background: rgb(251 250 248 / .5); }
+  .band small { display: block; font: 500 12px "Geist Mono", monospace; letter-spacing: .12em; color: #6d6961; margin-bottom: 12px; }
+  .nodes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .n { background: #fbfaf8; border: 1.5px solid #c9c4b9; border-radius: 10px; padding: 10px 11px; font-weight: 600; font-size: 15px; }
+  .n.hl { border-color: #cf5a2b; background: #f7e9e0; }
+</style>
+</head>
+<body>
+  <div class="l">
+    <div class="mark">MT</div>
+    <div class="eyebrow">Mathew Thornton · AI &amp; automation engineer</div>
+    <h1>I build AI that works on real systems, <em>and the systems too.</em></h1>
+  </div>
+  <div class="foot"><span><b>5</b> live clients</span><span><b>140</b> workflows</span><span><b>36</b> services as code</span></div>
+  <div class="r">
+    <div class="band"><small>L3 · AGENTS</small><div class="nodes"><div class="n">Voice agent</div><div class="n hl">Portfolio agent</div><div class="n">Kapti</div></div></div>
+    <div class="band"><small>L2 · AUTOMATION</small><div class="nodes"><div class="n">n8n</div><div class="n">CRM sync</div><div class="n">Open models</div></div></div>
+    <div class="band"><small>L1 · INFRASTRUCTURE</small><div class="nodes"><div class="n">36 services</div><div class="n">Edge + SSO</div><div class="n">Observability</div></div></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{if(localStorage.theme==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<title>Mathew Thornton · AI &amp; Automation Engineer</title>
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://mathornton1211.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Mathew Thornton builds AI agents, automation, and the infrastructure they run on. There's a live AI agent on this page you can ask about his work.">
+<meta property="og:title" content="Mathew Thornton · AI & Automation Engineer">
+<meta property="og:description" content="AI agents, automation, and the infrastructure they run on. There's a live agent on the page you can ask.">
+<meta name="theme-color" content="#f4f2ee">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2317181a'/%3E%3Ctext x='16' y='21' font-family='monospace' font-size='12' font-weight='700' fill='%23f4f2ee' text-anchor='middle'%3EMT%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<nav class="top">
+  <div class="wrap">
+    <a class="name" href="./">Mathew Thornton</a>
+    <ul>
+      <li><a href="#work">Work</a></li>
+      <li><a href="#agent">Ask the agent</a></li>
+      <li><a href="resume.html">Resume</a></li>
+      <li class="opt"><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">AI &amp; automation engineer · San Diego</div>
+        <h1>
+          <span class="w"><span style="--i:0">I</span></span> <span class="w"><span style="--i:1">build</span></span> <span class="w"><span style="--i:2">AI</span></span> <span class="w"><span style="--i:3">that</span></span> <span class="w"><span style="--i:4">works</span></span> <span class="w"><span style="--i:5">on</span></span> <span class="w"><span style="--i:6">real</span></span> <span class="w"><span style="--i:7">systems,</span></span>
+          <span class="w"><span style="--i:8"><em>and</em></span></span> <span class="w"><span style="--i:9"><em>the</em></span></span> <span class="w"><span style="--i:10"><em>systems</em></span></span> <span class="w"><span style="--i:11"><em>too.</em></span></span>
+        </h1>
+        <p class="lede">Six years keeping a SaaS company's infrastructure up, then I started building on top of it: an AI phone and automation platform with five live clients, a meeting assistant that never leaves your PC, and 36 services run entirely as code.</p>
+        <div class="cta">
+          <a class="btn primary magnetic" href="#agent">Ask my AI about me <span class="arr">→</span></a>
+          <a class="btn magnetic" href="resume.pdf" download>Resume (PDF)</a>
+        </div>
+        <div class="meta">
+          <span><i class="live"></i>Open to new roles</span>
+          <span>Remote or San Diego</span>
+          <span><a href="https://www.linkedin.com/in/mathew-thornton">LinkedIn</a> · <a href="https://github.com/Mathornton1211">GitHub</a></span>
+        </div>
+      </div>
+
+      <figure class="schematic" aria-label="Diagram of the three layers I work across: AI agents, automation, and infrastructure">
+        <svg viewBox="0 0 540 470" role="img">
+          <title>Agents on top of automation on top of infrastructure</title>
+          <rect class="sc-band" x="10" y="20" width="520" height="118" rx="14"/>
+          <rect class="sc-band" x="10" y="176" width="520" height="118" rx="14"/>
+          <rect class="sc-band" x="10" y="332" width="520" height="118" rx="14"/>
+          <text class="sc-band-label" x="26" y="42">L3 · AGENTS</text>
+          <text class="sc-band-label" x="26" y="198">L2 · AUTOMATION</text>
+          <text class="sc-band-label" x="26" y="354">L1 · INFRASTRUCTURE</text>
+
+          <path class="sc-wire" pathLength="1" data-ends="svc n8n" d="M103,382 V274"/>
+          <path class="sc-wire" pathLength="1" data-ends="svc models" d="M103,382 C103,328 437,328 437,274"/>
+          <path class="sc-wire" pathLength="1" data-ends="edge n8n" d="M270,382 C270,328 103,328 103,274"/>
+          <path class="sc-wire" pathLength="1" data-ends="edge crm" d="M270,382 V274"/>
+          <path class="sc-wire" pathLength="1" data-ends="obs models" d="M437,382 V274"/>
+          <path class="sc-wire" pathLength="1" data-ends="n8n voice" d="M103,226 V118"/>
+          <path class="sc-wire" pathLength="1" data-ends="crm voice" d="M270,226 C270,172 103,172 103,118"/>
+          <path class="sc-wire" pathLength="1" data-ends="models site" d="M437,226 C437,172 270,172 270,118"/>
+          <path class="sc-wire" pathLength="1" data-ends="models kapti" d="M437,226 V118"/>
+
+          <circle class="sc-packet" r="3"><animateMotion dur="2.6s" begin="2.3s" repeatCount="indefinite" path="M103,382 V274"/></circle>
+          <circle class="sc-packet" r="3"><animateMotion dur="3.4s" begin="2.9s" repeatCount="indefinite" path="M270,382 C270,328 103,328 103,274"/></circle>
+          <circle class="sc-packet" r="3"><animateMotion dur="2.2s" begin="3.3s" repeatCount="indefinite" path="M437,382 V274"/></circle>
+          <circle class="sc-packet" r="3"><animateMotion dur="2.4s" begin="2.6s" repeatCount="indefinite" path="M103,226 V118"/></circle>
+          <circle class="sc-packet" r="3"><animateMotion dur="3.6s" begin="3.6s" repeatCount="indefinite" path="M437,226 C437,172 270,172 270,118"/></circle>
+          <circle class="sc-packet down" r="2.5"><animateMotion dur="3s" begin="4s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear" path="M270,226 C270,172 103,172 103,118"/></circle>
+          <circle class="sc-packet down" r="2.5"><animateMotion dur="2.8s" begin="4.4s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear" path="M437,226 V118"/></circle>
+
+          <g class="sc-node" data-node="voice" style="--i:0"><rect x="28" y="68" width="150" height="50" rx="10"/><text x="42" y="90">Voice agent</text><text class="s" x="42" y="106">Vapi · 5 clients</text></g>
+          <g class="sc-node hl" data-node="site" style="--i:1"><rect x="195" y="68" width="150" height="50" rx="10"/><text x="209" y="90">Portfolio agent</text><text class="s" x="209" y="106">live on this page</text></g>
+          <g class="sc-node" data-node="kapti" style="--i:2"><rect x="362" y="68" width="150" height="50" rx="10"/><text x="376" y="90">Kapti</text><text class="s" x="376" y="106">on-device STT + LLM</text></g>
+          <g class="sc-node" data-node="n8n" style="--i:3"><rect x="28" y="224" width="150" height="50" rx="10"/><text x="42" y="246">n8n</text><text class="s" x="42" y="262">~140 workflows</text></g>
+          <g class="sc-node" data-node="crm" style="--i:4"><rect x="195" y="224" width="150" height="50" rx="10"/><text x="209" y="246">CRM + calendar</text><text class="s" x="209" y="262">GoHighLevel sync</text></g>
+          <g class="sc-node" data-node="models" style="--i:5"><rect x="362" y="224" width="150" height="50" rx="10"/><text x="376" y="246">Open models</text><text class="s" x="376" y="262">Ollama · llama.cpp</text></g>
+          <g class="sc-node" data-node="svc" style="--i:6"><rect x="28" y="380" width="150" height="50" rx="10"/><text x="42" y="402">36 services</text><text class="s" x="42" y="418">Compose · pinned</text></g>
+          <g class="sc-node" data-node="edge" style="--i:7"><rect x="195" y="380" width="150" height="50" rx="10"/><text x="209" y="402">Edge + SSO</text><text class="s" x="209" y="418">Traefik · Authentik</text></g>
+          <g class="sc-node" data-node="obs" style="--i:8"><rect x="362" y="380" width="150" height="50" rx="10"/><text x="376" y="402">Observability</text><text class="s" x="376" y="418">Prometheus · alerts</text></g>
+        </svg>
+        <figcaption><span>fig. 1: the layers I work across</span><span>hover a node</span></figcaption>
+      </figure>
+    </header>
+  </div>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="track">
+      <span>Rust</span><span>Tauri</span><span>TypeScript</span><span>Python</span><span>FastAPI</span><span>n8n</span><span>Vapi</span><span>Claude API</span><span>Workers AI</span><span>Ollama</span><span>llama.cpp</span><span>Whisper</span><span>Docker</span><span>Traefik</span><span>Prometheus</span><span>Postgres</span><span>SQLite FTS5</span><span>Expo</span><span>PowerShell</span><span>Active Directory</span>
+      <span>Rust</span><span>Tauri</span><span>TypeScript</span><span>Python</span><span>FastAPI</span><span>n8n</span><span>Vapi</span><span>Claude API</span><span>Workers AI</span><span>Ollama</span><span>llama.cpp</span><span>Whisper</span><span>Docker</span><span>Traefik</span><span>Prometheus</span><span>Postgres</span><span>SQLite FTS5</span><span>Expo</span><span>PowerShell</span><span>Active Directory</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="metrics" data-stagger>
+      <div class="metric"><b data-count="6">6<small>yrs</small></b><span>running production infrastructure</span></div>
+      <div class="metric"><b data-count="5">5</b><span>businesses live on my AI platform</span></div>
+      <div class="metric"><b data-count="140">140</b><span>automation workflows built and run</span></div>
+      <div class="metric"><b data-count="36">36</b><span>self-hosted services, all as code</span></div>
+      <div class="metric"><b data-count="1144">1,144</b><span>automated tests on Kapti</span></div>
+    </div>
+
+    <section id="agent">
+      <div class="label"><b>01</b> Live demo</div>
+      <div class="split">
+        <div class="sticky rv">
+          <h2>Don't take the resume's word for it. <em>Ask it.</em></h2>
+          <p>This is a working AI agent, not a chatbot with my resume pasted in. It decides what to look up, calls read-only tools over my work history, and shows you every call as it happens. If something isn't in the data, it says so.</p>
+          <ul class="checks">
+            <li><span><code>list_projects</code> what I've built, with stacks</span></li>
+            <li><span><code>get_project</code> the details of one project</span></li>
+            <li><span><code>get_experience</code> roles, dates, responsibilities</span></li>
+            <li><span><code>get_skills</code> skills, and what I'm looking for</span></li>
+          </ul>
+          <div class="livestats" aria-live="polite">
+            <div><b data-stat="questions">–</b><span>questions answered</span></div>
+            <div><b data-stat="tool_calls">–</b><span>lookups made</span></div>
+            <div><b data-stat="evals">–</b><span>evals passing</span></div>
+          </div>
+          <p class="muted" style="font-size:13.5px;margin-top:12px"><i class="live" style="display:inline-block;margin-right:8px"></i>Live counts from real visitors since <span data-stat="since">launch</span>. <a href="evals.html">See every eval answer →</a></p>
+        </div>
+
+        <div class="agent rv" data-agent>
+          <header>
+            <strong>mat@portfolio ~ agent</strong>
+            <span class="status"><span class="dot"></span><span>connecting</span></span>
+          </header>
+          <div class="log" aria-live="polite">
+            <div class="msg bot">I'm an agent with read access to Mat's projects, experience and skills. What would you like to know?</div>
+          </div>
+          <div class="suggest">
+            <button type="button">What has Mat built with AI?</button>
+            <button type="button">How is the homelab run as code?</button>
+            <button type="button">Is he a fit for a DevOps role?</button>
+            <button type="button">What's Kapti?</button>
+          </div>
+          <form>
+            <input type="text" placeholder="Ask about a project, a skill, a role…" maxlength="500" aria-label="Question">
+            <button class="btn" type="submit">Ask</button>
+          </form>
+          <div class="foot">Llama 3.3 70B · Workers AI · 4 read-only tools · <a href="work/this-site.html">architecture</a></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="work">
+      <div class="label"><b>02</b> Selected work</div>
+      <div class="index" data-stagger>
+        <a class="row" href="work/agp.html">
+          <span class="n">01</span>
+          <div><h3>AGP platform</h3><span class="tag">live · 5 clients</span></div>
+          <p>An AI phone receptionist and about 140 n8n workflows for local businesses: multi-tenant onboarding, CRM sync, and an AI audit that builds prospect reports and preview sites.</p>
+          <span class="stack">Vapi · n8n · Postgres<br>Next.js · Claude</span>
+          <span class="go">↗</span>
+        </a>
+        <a class="row" href="work/kapti.html">
+          <span class="n">02</span>
+          <div><h3>Kapti</h3><span class="tag">1,144 tests</span></div>
+          <p>A Windows meeting assistant that records, transcribes and writes notes entirely on-device. Every network request goes through one gateway that CI enforces.</p>
+          <span class="stack">Rust · Tauri 2<br>whisper.cpp · llama.cpp</span>
+          <span class="go">↗</span>
+        </a>
+        <a class="row" href="work/homelab.html">
+          <span class="n">03</span>
+          <div><h3>Homelab platform</h3><span class="tag">36 services</span></div>
+          <p>Rebuilt from scratch as code, with deploys gated by policy: every image pinned by digest, a contract for every stack, and a secrets scan before anything ships.</p>
+          <span class="stack">Docker · Traefik<br>Authentik · Prometheus</span>
+          <span class="go">↗</span>
+        </a>
+        <a class="row" href="https://github.com/Mathornton1211/tally">
+          <span class="n">04</span>
+          <div><h3>Tally</h3><span class="tag">open source</span></div>
+          <p>Self-hosted personal finance that answers one question: does the money last until the next money? Plaid in read-only mode, with a local model doing the AI work.</p>
+          <span class="stack">FastAPI · React<br>Plaid · Ollama</span>
+          <span class="go">↗</span>
+        </a>
+        <a class="row" href="work/this-site.html">
+          <span class="n">05</span>
+          <div><h3>This site</h3><span class="tag">$0 to run</span></div>
+          <p>A tool-using agent and a job-fit analyzer on an open-model free tier, with a cost ceiling that's structural, not a number someone has to watch.</p>
+          <span class="stack">Workers AI · Zod<br>vanilla JS</span>
+          <span class="go">↗</span>
+        </a>
+        <div class="row">
+          <span class="n">06</span>
+          <div><h3>Forge</h3></div>
+          <p>A local-first training app with a self-hosted AI coach. It logs food from a photo or a sentence, and ships updates over the air on canary and stable channels.</p>
+          <span class="stack">Expo · Fastify<br>vision LLM</span>
+          <span class="go"></span>
+        </div>
+      </div>
+    </section>
+
+    <section id="fit">
+      <div class="zig">
+        <div class="mini rv" aria-hidden="true">
+          <div class="hd"><span>fit_report.json · AI Automation Engineer</span><span>structured output</span></div>
+          <div class="req"><div><b>LLM APIs, tool use, agents</b><small>Tool-using agents; a 19-agent Claude Code plugin</small></div><span class="pill">strong</span></div>
+          <div class="req"><div><b>Workflow automation</b><small>~140 n8n workflows in production, queue mode</small></div><span class="pill">strong</span></div>
+          <div class="req"><div><b>Docker, CI/CD, Linux</b><small>36 services as code, policy-gated deploys</small></div><span class="pill">strong</span></div>
+          <div class="req"><div><b>Voice AI (nice to have)</b><small>AI receptionist on Vapi, 5 live clients</small></div><span class="pill">strong</span></div>
+          <div class="req"><div><b>Evals for LLM features</b><small>Listed in skills; no specific suite described</small></div><span class="pill partial">partial</span></div>
+        </div>
+        <div class="rv">
+          <div class="label" style="margin-bottom:24px"><b>03</b> AI feature</div>
+          <h2>Paste a job. Get an honest fit report.</h2>
+          <p>It reads a job description against my real experience and returns structured JSON: each requirement matched with evidence, the gaps stated plainly, and a resume reordered for the role. It may reword and reorder, never invent, and every answer is checked against the source data.</p>
+          <div class="cta" style="margin-top:28px">
+            <a class="btn primary magnetic" href="tailor.html">Try the job-fit demo <span class="arr">→</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="experience">
+      <div class="label"><b>04</b> Experience</div>
+      <div class="split">
+        <div class="sticky rv">
+          <h2>From the server room to the model layer.</h2>
+          <p>I learned systems the hard way: patching, backups, networks, identity, 2 a.m. outages. Now I build AI on top of that knowledge, which is why the things I ship have logs, limits and a way back.</p>
+          <div class="cta" style="margin-top:24px"><a class="btn magnetic" href="resume.html">Full resume <span class="arr">→</span></a></div>
+        </div>
+        <div class="timeline">
+          <i class="bar"></i>
+          <div class="job now rv">
+            <div class="when">Feb 2026 – now</div>
+            <div><h3>Founder &amp; Engineer</h3><div class="org">Assisted Growth Partner · AI voice and automation</div>
+              <ul><li>Built and operate an AI receptionist and automation platform, live with 5 clients.</li><li>About 140 n8n workflows: onboarding, campaign dispatch, CRM sync, dashboards.</li><li>Run the production stack: Docker, Traefik, Postgres, Redis, queue-mode n8n.</li></ul>
+            </div>
+          </div>
+          <div class="job rv">
+            <div class="when">2019 – Oct 2025</div>
+            <div><h3>System Administrator</h3><div class="org">Cority (formerly Enviance) · Carlsbad</div>
+              <ul><li>Ran IT for a SaaS company across two offices, a data center and remote staff.</li><li>Windows and Linux servers on VMware ESXi; backups, AD and Azure AD, licensing.</li><li>Cisco Meraki and Catalyst networking, firewalls and VPN, PRTG monitoring.</li></ul>
+            </div>
+          </div>
+          <div class="job rv">
+            <div class="when">2017 – 2019</div>
+            <div><h3>Desktop Support Technician</h3><div class="org">Enviance · Carlsbad</div></div>
+          </div>
+          <div class="job rv">
+            <div class="when">2010 – 2017</div>
+            <div><h3>Sales &amp; retail management</h3><div class="org">GreatCall · Living Spaces · Fry's Electronics</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contact">
+      <div class="label"><b>05</b> Contact</div>
+      <h2 class="rv">Let's build something that <em>stays up.</em></h2>
+      <div class="cta rv" style="--i:1">
+        <button class="btn primary copy magnetic" data-copy="mathew.thornton@gmail.com"><span class="idle">mathew.thornton@gmail.com</span><span class="ok">Copied to clipboard</span></button>
+        <a class="btn magnetic" href="https://www.linkedin.com/in/mathew-thornton">LinkedIn <span class="arr">↗</span></a>
+        <a class="btn magnetic" href="https://github.com/Mathornton1211">GitHub <span class="arr">↗</span></a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="site"><div class="wrap"><span>© 2026 Mathew Thornton</span><span data-clock></span><span>Static site · agent on Workers AI · $0 to run</span></div></footer>
+
+<script src="assets/config.js"></script>
+<script src="assets/motion.js"></script>
+<script src="assets/agent.js"></script>
+</body>
+</html>

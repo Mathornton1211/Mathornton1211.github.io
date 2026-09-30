@@ -1,0 +1,245 @@
+{
+  "name": "Mathew Thornton",
+  "headline": "AI & automation engineer who also runs the infrastructure",
+  "location": "San Diego County, CA",
+  "email": "mathew.thornton@gmail.com",
+  "github": "https://github.com/Mathornton1211",
+  "linkedin": "https://www.linkedin.com/in/mathew-thornton",
+  "targets": [
+    "AI / automation engineer",
+    "Platform / DevOps / SRE",
+    "Senior systems administrator"
+  ],
+  "summary": "Systems administrator of 6+ years who became a builder. Ran production IT for a SaaS company, then founded an AI automation company (live with 5 clients) and shipped local-first AI apps, a homelab platform run entirely as code, and multi-agent tooling. Strongest where AI meets operations: agents that act on real systems, run safely, and are observable.",
+  "experience": [
+    {
+      "id": "agp",
+      "title": "Founder & Engineer",
+      "org": "Assisted Growth Partner (AGP)",
+      "dates": "Feb 2026 – Present",
+      "bullets": [
+        "Designed, built and operate an AI voice-receptionist and automation platform for local service businesses, live with 5 clients (inbound and outbound calling on Vapi, GoHighLevel CRM and calendar sync).",
+        "Built about 140 n8n workflows: multi-tenant onboarding and provisioning, an outbound campaign dispatcher with a queue, social-media autopilot, Meta ad generation, and cost/billing dashboards.",
+        "Shipped a 'Lead-Leak Audit' product: intake, an enrichment and scoring engine, AI-generated tailored reports, and AI-generated preview websites for prospects (Next.js, Postgres, Claude).",
+        "Run the production stack on a VPS: Docker, Traefik, Postgres, Redis, queue-mode n8n with workers, and Uptime Kuma."
+      ]
+    },
+    {
+      "id": "cority",
+      "title": "System Administrator",
+      "org": "Cority (formerly Enviance), Carlsbad, CA",
+      "dates": "2019 – Oct 2025",
+      "bullets": [
+        "Ran IT for a mid-sized SaaS company across two offices, a data center and remote staff.",
+        "Built, patched, upgraded and troubleshot physical and virtual Windows and Linux servers (VMware ESXi, iDRAC, blades and rack-mount).",
+        "Owned backups (tape, offsite and cloud), licensing and vendor coordination, and access management in Active Directory and Azure AD.",
+        "Managed Cisco Meraki and Catalyst networking, firewalls and VPN (full and split tunnel), and monitoring with PRTG; reported regularly to the CTO."
+      ]
+    },
+    {
+      "id": "enviance",
+      "title": "Desktop Support Technician",
+      "org": "Enviance, Carlsbad, CA",
+      "dates": "2017 – 2019",
+      "bullets": [
+        "Handled internal support by phone, email and in person; imaged and deployed workstations; onboarded new hires in Active Directory."
+      ]
+    },
+    {
+      "id": "earlier",
+      "title": "Sales & retail management",
+      "org": "GreatCall · Living Spaces · Fry's Electronics",
+      "dates": "2010 – 2017",
+      "bullets": [
+        "High-volume customer-facing sales and team supervision. That's where the habit of explaining technical things plainly comes from."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "kapti",
+      "name": "Kapti",
+      "kind": "Desktop app · Rust + Tauri",
+      "one_liner": "A meeting assistant that never phones home: it records, transcribes and writes notes entirely on your own PC.",
+      "public": false,
+      "stack": [
+        "Rust",
+        "Tauri 2",
+        "Next.js / TypeScript",
+        "whisper.cpp",
+        "Parakeet",
+        "llama.cpp",
+        "SQLite FTS5"
+      ],
+      "details": [
+        "Captures the mic and system audio as separate tracks, or a single app's audio, and transcribes on-device with Whisper or Parakeet.",
+        "A local LLM (llama.cpp sidecar) writes the summary, decisions, action items and chapters. Nothing leaves the machine unless the user switches a cloud engine on (Claude or Gemini with their own key).",
+        "All network egress goes through one allow-listed gateway module, and a CI guard fails the build if code anywhere else tries to reach the network.",
+        "A local knowledge base (Word, RTF, Markdown, Obsidian vaults) indexed with SQLite FTS5 over roughly 56k chunks. 'Meeting assist' surfaces your own notes live as a topic comes up.",
+        "Scale: 242 IPC commands between the Rust core and the UI, 1,144 Rust tests (up from about 250 at fork time), and schema migrations locked by a CI guard.",
+        "Collapsed the app's network paths from 26 to 1, and cut local answer latency from 57.5s to 1.7s by moving to a GPU (Vulkan) sidecar and a smaller model.",
+        "Started from a fork of the open-source Meetily v0.4.1 (MIT) and was substantially re-architected."
+      ],
+      "lessons": "Typed contracts across the Rust/TypeScript boundary matter. The worst bugs were silent serialization mismatches, so the next step is generating IPC types rather than hand-writing them."
+    },
+    {
+      "id": "homelab",
+      "name": "Homelab platform",
+      "kind": "Infrastructure as code",
+      "one_liner": "36 self-hosted services rebuilt from scratch as code, with deploys gated by policy checks.",
+      "public": false,
+      "stack": [
+        "Docker Compose",
+        "Traefik",
+        "Authentik SSO",
+        "Prometheus + alerting",
+        "Gitea",
+        "Ollama",
+        "Cloudflare Tunnel",
+        "Bash"
+      ],
+      "details": [
+        "36 Compose stacks on one host: edge and SSO, monitoring and alerting, restic backups, Gitea, media, photos (Immich), local LLMs (Ollama, Open WebUI, ComfyUI), n8n, Vaultwarden, and my own apps (Forge, Tally).",
+        "deploy.sh refuses to run unless validate.sh passes. It requires every image pinned by digest, a declared contract per stack (tier, wave, data class, purpose, backup paths), a managed label, and a clean secrets scan.",
+        "Migrated side by side: the rebuilt stack ran in parallel with the legacy one on separate networks, ports and data directories, then services moved over one at a time while the old stack kept serving the house.",
+        "Hardened agent sandboxes: a Telegram-to-Claude-Code bridge runs with no Docker socket, no NAS mounts and a single workspace directory. The container is designed around what it must not be able to reach.",
+        "The old lab was archived as a GPG-encrypted backup, with a full inventory and rebuild plan."
+      ],
+      "lessons": "Write the rules down as code. Digest pinning and a secrets scan in the deploy path caught more problems than any runbook."
+    },
+    {
+      "id": "agp",
+      "name": "AGP automation platform",
+      "kind": "AI voice + automation · business",
+      "one_liner": "An AI receptionist and automation stack for local businesses, built and run as a solo founder, live with 5 clients.",
+      "public": false,
+      "stack": [
+        "n8n (queue mode)",
+        "Vapi voice AI",
+        "GoHighLevel",
+        "Postgres",
+        "Next.js",
+        "Claude API",
+        "Docker + Traefik"
+      ],
+      "details": [
+        "Scale: about 140 n8n workflows in production (queue mode with workers), serving 5 client businesses.",
+        "The AI receptionist answers and books calls; each call is logged with a transcript, a heat score, an AI recommendation and the close outcome.",
+        "Multi-tenant: an onboarding flow provisions a new client's agent config, phone routing and CRM links. A shared 'resolve tenant + runtime' subflow sits in front of every workflow.",
+        "Lead-Leak Audit: a prospect enters a business. The pipeline enriches it, scores where leads leak (missed calls, slow replies, weak site), uses Claude to structure the research into the report, and generates a preview website with a build-then-critique pass.",
+        "Ops dashboard for calls, pipeline, campaign queue and per-tenant cost."
+      ],
+      "lessons": "Automations need the same discipline as code: error workflows on everything, versioned exports and secrets outside the workflow JSON. The workflows that broke were the ones missing those."
+    },
+    {
+      "id": "tally",
+      "name": "Tally",
+      "kind": "Web app · open source",
+      "one_liner": "Self-hosted personal finance built around one question: does the money last until the next money?",
+      "public": true,
+      "url": "https://github.com/Mathornton1211/tally",
+      "stack": [
+        "Python",
+        "FastAPI",
+        "Postgres",
+        "React / Vite",
+        "Plaid",
+        "Ollama"
+      ],
+      "details": [
+        "Connects to real banks through Plaid and is read-only by design: it can see accounts but can never move money.",
+        "'Safe to spend' subtracts bills that haven't landed yet. Projections understand that rent went out on the 1st and isn't going out again, which cut false budget alerts from nine to two.",
+        "AI categorization and insights run against a self-hosted model, so financial data never reaches a third-party AI.",
+        "22 migrations, about 318 tests, CI on every push, a one-command installer and a Plaid-sandbox demo mode."
+      ],
+      "lessons": "Build for the bad month first. The app earns trust by being right when things are tight."
+    },
+    {
+      "id": "forge",
+      "name": "Forge",
+      "kind": "Mobile + server",
+      "one_liner": "A local-first strength-training app with a self-hosted AI coach.",
+      "public": false,
+      "stack": [
+        "React Native / Expo",
+        "SQLite",
+        "Fastify / TypeScript",
+        "Postgres",
+        "Ollama + vision model",
+        "Python (form-check worker)"
+      ],
+      "details": [
+        "The phone stores everything locally and syncs to a self-hosted server; the coach reviews workouts and answers questions with each person's own context.",
+        "Food logging from a sentence or a photo of the plate (a local vision model), matched against USDA portion data. It handles fractions, dish names and chain-restaurant items.",
+        "Body-goal targets (lose weight, gain strength, hold) that recalibrate from measured maintenance after two weeks of logs.",
+        "Its own release pipeline: canary and stable over-the-air channels, with a single CLI (up, ship, promote) that deploys the server behind Traefik and a Cloudflare tunnel.",
+        "About 250 commits and around 30 test files, with CI type-checking and testing both halves."
+      ],
+      "lessons": "Log first, compute later. Letting the user save instantly and filling in the numbers afterwards made logging work with no signal."
+    },
+    {
+      "id": "agentic-builder",
+      "name": "Agentic Builder",
+      "kind": "Claude Code plugin",
+      "public": false,
+      "one_liner": "A Claude Code plugin that runs a team of 19 role-based AI agents from idea to shipped product.",
+      "stack": [
+        "Claude Code",
+        "Subagents",
+        "Hooks",
+        "Node.js"
+      ],
+      "details": [
+        "19 role agents (director, planner, coder, AI engineer, automation engineer, data engineer, QA, security, release, DBA, compliance and more) plus commands such as /build, /ship and /gtm.",
+        "Least-privilege database access: only the DBA agent may write to Postgres, enforced by a PreToolUse hook that blocks writes unless a write window is open and logs every attempt.",
+        "Used to build much of the AGP Lead-Leak Audit."
+      ],
+      "lessons": "Guardrails belong in hooks and permissions, not only in prompts."
+    }
+  ],
+  "skills": {
+    "AI & agents": [
+      "Claude API and Claude Code (agents, tools, hooks, plugins)",
+      "Multi-agent design",
+      "Local inference: Ollama, llama.cpp, Whisper/Parakeet",
+      "Retrieval: SQLite FTS5, pgvector",
+      "Voice AI (Vapi)",
+      "Prompt and eval design"
+    ],
+    "Automation": [
+      "n8n (queue mode, sub-workflows, error handling)",
+      "Webhooks and API integration",
+      "CRM automation (GoHighLevel)",
+      "Telegram and Slack bots"
+    ],
+    "Platform & DevOps": [
+      "Docker and Compose",
+      "Traefik",
+      "Linux administration",
+      "GitHub Actions CI",
+      "Prometheus and alerting",
+      "Authentik SSO",
+      "Cloudflare Tunnel",
+      "Backup and restore design",
+      "Policy-as-code deploy gates"
+    ],
+    "Systems & networking": [
+      "Windows Server",
+      "Active Directory and Azure AD",
+      "VMware ESXi / iDRAC",
+      "Cisco Meraki and Catalyst",
+      "Firewalls and VPN",
+      "PowerShell"
+    ],
+    "Software": [
+      "TypeScript / Node",
+      "Next.js / React",
+      "React Native / Expo",
+      "Python / FastAPI",
+      "Rust / Tauri",
+      "Postgres / SQLite"
+    ]
+  },
+  "working_style": "Ships end to end: infrastructure, backend, UI and docs. Writes handoff and decision docs as he goes. Cares about safety rails for AI that acts on real systems: least privilege, audit logs, approval gates. Comfortable being the only engineer.",
+  "availability": "Open to full-time roles in AI/automation engineering, platform/DevOps, or senior systems administration. San Diego area or remote."
+}

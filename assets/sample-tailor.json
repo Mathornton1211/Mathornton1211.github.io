@@ -1,0 +1,45 @@
+{
+  "role_title": "AI Automation Engineer",
+  "company": "",
+  "fit_summary": "A strong fit on the core of this role: Mat builds LLM-powered automations that act on real systems (CRM, calendars, email) and runs them in production himself. The main gap is Kubernetes, a nice-to-have; his container experience is Docker and Compose.",
+  "matches": [
+    { "requirement": "3+ years building production systems; TypeScript or Python", "evidence": "Six years running production IT at a SaaS company, plus shipped apps in TypeScript (Forge server, this site's agent) and Python (Tally, FastAPI, about 318 tests).", "strength": "strong" },
+    { "requirement": "LLM APIs, tool use and agent patterns", "evidence": "Claude API and Claude Code agents with tools and hooks; Agentic Builder, a 19-agent Claude Code plugin; the tool-using agent on this site.", "strength": "strong" },
+    { "requirement": "Workflow automation (n8n, Zapier, Temporal)", "evidence": "About 140 n8n workflows in queue mode for AGP: tenant onboarding, a campaign dispatcher with a queue, and a shared tenant-resolution subflow.", "strength": "strong" },
+    { "requirement": "Integrations with CRM, email and internal APIs", "evidence": "AI receptionist synced to GoHighLevel CRM and calendars; webhooks and third-party API integrations across the AGP platform.", "strength": "strong" },
+    { "requirement": "Docker, CI/CD, Linux services", "evidence": "36 Docker Compose services run as code with digest-pinned images and a validated deploy gate; GitHub Actions CI on Tally and Forge.", "strength": "strong" },
+    { "requirement": "Observability: logging, metrics, alerting", "evidence": "Prometheus and alerting across the homelab; PRTG monitoring at Cority; per-call logging and cost dashboards for AGP.", "strength": "strong" },
+    { "requirement": "Voice AI or telephony (nice to have)", "evidence": "Built and operates an AI phone receptionist on Vapi, live with 5 clients.", "strength": "strong" },
+    { "requirement": "Evals for LLM features (nice to have)", "evidence": "Prompt and eval design is listed in his skills, but the profile doesn't describe a specific eval suite.", "strength": "partial" }
+  ],
+  "gaps": [
+    { "requirement": "Kubernetes (nice to have)", "note": "Not in his profile. His orchestration experience is Docker Compose at a 36-service scale, with policy-gated deploys." }
+  ],
+  "headline": "AI automation engineer who ships agents into production",
+  "summary": "Builds LLM-powered automations that act on real business systems, and runs them in production. Founder of an AI voice and automation platform live with 5 clients (about 140 n8n workflows, Vapi, CRM sync), with six years of production systems administration behind it.",
+  "project_order": ["agp", "kapti", "homelab", "tally", "forge"],
+  "experience": [
+    { "id": "agp", "bullets": [
+      "Built about 140 n8n workflows automating operations for local businesses: multi-tenant onboarding and provisioning, an outbound campaign dispatcher with a queue, social autopilot, and cost dashboards.",
+      "Designed and operate an AI voice receptionist on Vapi, integrated with GoHighLevel CRM and calendars, live with 5 clients.",
+      "Shipped a Lead-Leak Audit pipeline: intake, enrichment and scoring, Claude-structured research, and AI-generated preview websites (Next.js, Postgres).",
+      "Run the production stack: Docker, Traefik, Postgres, Redis, and queue-mode n8n with workers."
+    ]},
+    { "id": "cority", "bullets": [
+      "Ran IT for a mid-sized SaaS company across two offices, a data center and remote staff.",
+      "Built, patched and troubleshot physical and virtual Windows and Linux servers (VMware ESXi, iDRAC).",
+      "Owned backups, licensing and vendor coordination, and access management in Active Directory and Azure AD.",
+      "Managed Cisco Meraki and Catalyst networking, firewalls, VPN and PRTG monitoring; reported regularly to the CTO."
+    ]},
+    { "id": "enviance", "bullets": [
+      "Handled internal support tickets, imaged and deployed workstations, and onboarded new hires in Active Directory."
+    ]},
+    { "id": "earlier", "bullets": [
+      "High-volume customer-facing sales and team supervision."
+    ]}
+  ],
+  "skills_focus": ["Claude API and Claude Code", "Multi-agent design", "n8n (queue mode, sub-workflows, error handling)", "Webhooks and API integration", "CRM automation (GoHighLevel)", "Voice AI (Vapi)", "TypeScript / Node", "Python / FastAPI", "Docker and Compose", "GitHub Actions CI", "Prometheus and alerting", "Postgres / SQLite"],
+  "intro_note": "Hi, I'm Mat. I build AI automations that act on real systems and I run them in production. My current platform handles calls, CRM updates and follow-ups for 5 local businesses on about 140 n8n workflows. Before that I spent six years keeping a SaaS company's infrastructure up. Your role looks like the work I already do every day, and I'd be glad to talk it through.",
+  "live": false,
+  "example": true
+}

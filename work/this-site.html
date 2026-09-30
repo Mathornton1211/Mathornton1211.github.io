@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{if(localStorage.theme==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<title>How This Site Works · Mathew Thornton</title>
+<meta property="og:title" content="How This Site Works · Mathew Thornton">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://mathornton1211.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="The architecture and guardrails behind the AI agent and job tailor on mathornton1211.github.io.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<nav class="top">
+  <div class="wrap">
+    <a class="name" href="../">Mathew Thornton</a>
+    <ul>
+      <li><a href="../#work">Work</a></li>
+      <li><a href="../tailor.html">Job-fit demo</a></li>
+      <li><a href="../resume.html">Resume</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="wrap narrow case" style="padding:40px 20px 56px">
+  <div class="eyebrow">Case study · this website</div>
+  <h1>How this site's AI works</h1>
+  <p class="lede">A portfolio says "I build AI features". This one runs two of them, so you can check. Here's how they're built, and the guardrails that keep an AI on a public page honest, safe, and free to run.</p>
+
+  <div class="facts">
+    <div class="fact"><b>2</b><span>AI features: agent + tailor</span></div>
+    <div class="fact"><b>4</b><span>read-only tools</span></div>
+    <div class="fact"><b>1</b><span>source of truth (profile.json)</span></div>
+    <div class="fact"><b>$0</b><span>to run, guaranteed by design</span></div>
+  </div>
+
+  <h2>Architecture</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 760 330" role="img" aria-label="Browser talks to a static site on GitHub Pages and to a Cloudflare Worker, which calls a Llama model on Workers AI and reads profile.json">
+      <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+      <rect class="box" x="20" y="130" width="140" height="64" rx="8"/>
+      <text class="t" x="90" y="158" text-anchor="middle">Your browser</text>
+      <text class="t s" x="90" y="178" text-anchor="middle">agent.js · tailor</text>
+
+      <rect class="box" x="230" y="30" width="190" height="64" rx="8"/>
+      <text class="t" x="325" y="58" text-anchor="middle">GitHub Pages</text>
+      <text class="t s" x="325" y="78" text-anchor="middle">static HTML/CSS/JS</text>
+
+      <rect class="box hl" x="230" y="190" width="190" height="110" rx="8"/>
+      <text class="t" x="325" y="216" text-anchor="middle">Cloudflare Worker</text>
+      <text class="t s" x="325" y="238" text-anchor="middle">CORS allow-list</text>
+      <text class="t s" x="325" y="256" text-anchor="middle">rate limit + daily cap</text>
+      <text class="t s" x="325" y="274" text-anchor="middle">tool loop · validation</text>
+
+      <rect class="box" x="510" y="150" width="220" height="64" rx="8"/>
+      <text class="t" x="620" y="178" text-anchor="middle">Workers AI</text>
+      <text class="t s" x="620" y="198" text-anchor="middle">Llama 3.3 70B · free tier</text>
+
+      <rect class="box" x="510" y="250" width="220" height="56" rx="8"/>
+      <text class="t" x="620" y="274" text-anchor="middle">profile.json</text>
+      <text class="t s" x="620" y="292" text-anchor="middle">bundled, read-only</text>
+
+      <path class="edge" d="M160,150 C195,120 200,70 228,64"/>
+      <path class="edge hl" d="M160,176 C195,200 200,240 228,244"/>
+      <path class="edge hl" d="M420,230 C460,215 470,190 508,184"/>
+      <path class="edge dash" d="M420,270 L508,276"/>
+      <text class="t s" x="470" y="296" text-anchor="middle">tools</text>
+    </svg>
+    <figcaption>The site is static. Anything that needs a model goes through one small Worker. There is no API key to leak: the model is a platform binding.</figcaption>
+  </figure>
+
+  <h2>The agent</h2>
+  <p>The chat on the home page is a tool-using agent, not a chatbot with a resume pasted into its prompt. It has four read-only tools over <a href="../data/profile.json">profile.json</a>: <code>list_projects</code>, <code>get_project</code>, <code>get_experience</code> and <code>get_skills</code>. It decides what to look up, and you can watch it do so: each tool call is streamed to the page as it happens.</p>
+  <ul>
+    <li><b>Grounded, not memorized.</b> The system prompt tells it to look facts up before answering and to say when something isn't covered. Keeping the facts in tools instead of the prompt means answers cite what the data says, and a new project is one JSON edit.</li>
+    <li><b>Streaming.</b> The Worker runs the tool loop and re-emits a simple event stream (<code>tool</code>, <code>tool_result</code>, <code>text</code>, <code>done</code>), so the browser code stays about 150 lines with no framework.</li>
+    <li><b>Bounded.</b> At most three tool rounds per answer, a capped history length, and inputs validated with Zod before any tool runs.</li>
+  </ul>
+
+  <h2>The job tailor</h2>
+  <p>Paste a job description and the tailor returns a typed JSON object: requirements matched with evidence, gaps, a tailored headline and summary, reordered projects, reworded bullets, and a short intro note. It uses the model's JSON-schema mode, and the result is validated against a Zod schema (with one retry), so the page never has to parse free text.</p>
+  <div class="callout">The hard rule is honesty. The model may reword, reorder and cut, but never add. Every project and job id it returns is checked against the profile before it's shown, and the prompt treats the job description as untrusted input, so instructions hidden in a pasted posting are ignored.</div>
+
+  <h2>Guardrails for a public AI</h2>
+  <ul>
+    <li><b>Least privilege.</b> The agent can only read one JSON file. It has no web access, no email, and nothing that writes.</li>
+    <li><b>Prompt-injection posture.</b> Visitor messages and job descriptions are treated as data. The agent's only capability is reading public facts, so the worst a successful injection can do is make it say something odd.</li>
+    <li><b>$0 by construction, not by budget.</b> The model runs on Cloudflare Workers AI's free daily allowance, on an account with no billing. When the allowance runs out, calls fail and the page switches to recorded examples: same tool traces, same answers, clearly labelled. A per-IP hourly limit keeps one visitor from using up the day.</li>
+    <li><b>Origin allow-list.</b> Only this site (and localhost for development) can call the Worker.</li>
+    <li><b>Prompt leaks are blocked in code.</b> Every answer is checked for fragments of the agent's own instructions before it is sent. Evals showed a prompt instruction alone stopped extraction only two times in three.</li>
+    <li><b>Measured, not assumed.</b> 36 automated evals cover grounding, hallucination traps and prompt injection, and <a href="../evals.html">every answer is published</a>. Public usage counters only count real visitors; eval traffic is excluded.</li>
+    <li><b>Tolerant of model quirks.</b> Open models return tool calls in slightly different shapes, so the Worker normalizes them and validates every argument before a tool runs. Bad structured output gets one retry, and then the recorded example.</li>
+    <li><b>Degrades gracefully.</b> If the Worker is down, the chat says so and points to the static content. A mock mode lets the whole site run offline for development.</li>
+  </ul>
+
+  <h2>Why this design</h2>
+  <p>This is the same pattern I'd use for an internal AI feature at work: a thin, auditable service in front of the model, narrowly scoped tools instead of broad access, structured output wherever code consumes the result, and a cost ceiling that is structural rather than a number someone has to watch.</p>
+
+  <div class="callout"><b>Stack:</b> static HTML/CSS/JS on GitHub Pages · Cloudflare Workers (TypeScript) · Cloudflare Workers AI (Llama 3.3 70B) with tool calling and JSON-schema mode · Zod · Workers KV</div>
+
+  <div class="cta" style="margin-top:32px">
+    <a class="btn" href="../evals.html">See the evals</a>
+    <a class="btn" href="../#work">← Back to work</a>
+    <a class="btn primary" href="../">Try the agent</a>
+  </div>
+</main>
+
+<footer class="site"><div class="wrap"><span>© 2026 Mathew Thornton</span></div></footer>
+<script src="../assets/motion.js"></script>
+</body>
+</html>
