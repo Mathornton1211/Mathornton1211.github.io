@@ -102,6 +102,14 @@
       });
       if (!res.ok || !res.body) {
         const err = await res.json().catch(() => ({}));
+        // Rate-limited visitors still get the recorded answer for suggested questions.
+        if (res.status === 429 && recorded[question]) {
+          history.pop();
+          unthink();
+          add("msg bot err", err.error || "The live demo is busy.");
+          await replay(question);
+          return;
+        }
         throw new Error(err.error || "The demo is unavailable right now.");
       }
       const reader = res.body.getReader();
